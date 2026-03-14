@@ -1,0 +1,26 @@
+<% if logged_in? %>
+
+  <nav class="bg-white shadow mb-6">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between">
+
+      <div class="font-bold text-lg">
+        MarketSync
+      </div>
+
+      <div class="flex items-center space-x-4">
+
+        <span class="text-gray-600">
+          <%= current_user.email %>
+        </span>
+
+        <%= button_to "Logout",
+            logout_path,
+            method: :delete,
+            class: "bg-red-500 text-white px-3 py-1 rounded" %>
+
+      </div>
+
+    </div>
+  </nav>
+
+<% end %>

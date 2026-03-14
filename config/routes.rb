@@ -1,4 +1,6 @@
 Rails.application.routes.draw do
+  get "organizations/new"
+  get "organizations/create"
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
@@ -17,4 +19,7 @@ Rails.application.routes.draw do
   get "login", to: "sessions#new"
   post "sessions", to: "sessions#create"
   delete "logout", to: "sessions#destroy"
+
+  get "dashboard", to: "dashboard#index"
+  resources :organizations, only: %i[new create]
 end

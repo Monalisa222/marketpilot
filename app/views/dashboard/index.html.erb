@@ -1,0 +1,37 @@
+<div class="max-w-6xl mx-auto">
+
+  <h1 class="text-3xl font-bold mb-6">
+    Dashboard
+  </h1>
+
+  <div class="bg-white shadow rounded p-6">
+
+    <h2 class="text-xl font-semibold mb-4">
+      Your Organizations
+    </h2>
+
+    <% if @organizations.any? %>
+
+      <ul class="space-y-2">
+        <% @organizations.each do |org| %>
+          <li class="border p-3 rounded">
+            <%= org.name %>
+          </li>
+        <% end %>
+      </ul>
+
+    <% else %>
+
+      <p class="text-gray-500 mb-4">
+        You don't belong to any organization yet.
+      </p>
+
+      <%= link_to "Create Organization",
+          new_organization_path,
+          class: "bg-blue-600 text-white px-4 py-2 rounded" %>
+
+    <% end %>
+
+  </div>
+
+</div>
