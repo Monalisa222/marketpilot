@@ -2,7 +2,7 @@ class ProductsController < ApplicationController
   before_action :require_login
 
   def index
-    @products = current_organization.products
+    @products = ProductCacheService.fetch_products(current_organization)
   end
 
   def new
@@ -13,6 +13,8 @@ class ProductsController < ApplicationController
     @product = current_organization.products.new(product_params)
 
     if @product.save
+      ProductCacheService.clear(current_organization)
+
       redirect_to products_path, notice: "Product created successfully"
     else
       render :new, status: :unprocessable_entity
