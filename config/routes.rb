@@ -1,4 +1,5 @@
 Rails.application.routes.draw do
+  get "listings/create"
   get "organization_switches/create"
   get "products/index"
   get "products/new"
@@ -28,7 +29,9 @@ Rails.application.routes.draw do
   get "dashboard", to: "dashboard#index"
   resources :organizations, only: %i[new create]
 
-  resources :organization_switches, only: [:create]
+  resources :organization_switches, only: [ :create ]
 
   resources :products
+
+  resources :listings, only: [ :create ]
 end

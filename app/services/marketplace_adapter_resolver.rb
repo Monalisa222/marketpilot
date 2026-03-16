@@ -1,5 +1,4 @@
 class MarketplaceAdapterResolver
-
   def self.for(account)
     case account.marketplace
 
@@ -9,7 +8,5 @@ class MarketplaceAdapterResolver
     else
       raise "Unsupported marketplace"
     end
-
   end
-
 end

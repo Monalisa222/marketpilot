@@ -1,7 +1,6 @@
 module Integrations
   module Adapters
     class ShopifyAdapter < BaseAdapter
-
       def fetch_products
         # Shopify product API call will go here
       end
@@ -17,7 +16,6 @@ module Integrations
       def update_price(sku, price)
         # Shopify price update
       end
-
     end
   end
 end

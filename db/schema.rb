@@ -10,9 +10,23 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_14_102413) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_16_064932) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "listings", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "external_id"
+    t.bigint "marketplace_account_id", null: false
+    t.decimal "price", precision: 10, scale: 2
+    t.integer "quantity"
+    t.string "status", default: "active"
+    t.datetime "updated_at", null: false
+    t.bigint "variant_id", null: false
+    t.index ["marketplace_account_id"], name: "index_listings_on_marketplace_account_id"
+    t.index ["variant_id", "marketplace_account_id"], name: "index_listings_on_variant_id_and_marketplace_account_id", unique: true
+    t.index ["variant_id"], name: "index_listings_on_variant_id"
+  end
 
   create_table "marketplace_accounts", force: :cascade do |t|
     t.string "api_key"
@@ -73,6 +87,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_14_102413) do
     t.index ["sku"], name: "index_variants_on_sku", unique: true
   end
 
+  add_foreign_key "listings", "marketplace_accounts"
+  add_foreign_key "listings", "variants"
   add_foreign_key "marketplace_accounts", "organizations"
   add_foreign_key "memberships", "organizations"
   add_foreign_key "memberships", "users"
