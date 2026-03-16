@@ -1,4 +1,9 @@
 Rails.application.routes.draw do
+  get "organization_switches/create"
+  get "products/index"
+  get "products/new"
+  get "products/create"
+  get "products/show"
   get "organizations/new"
   get "organizations/create"
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
@@ -22,4 +27,8 @@ Rails.application.routes.draw do
 
   get "dashboard", to: "dashboard#index"
   resources :organizations, only: %i[new create]
+
+  resources :organization_switches, only: [:create]
+
+  resources :products
 end

@@ -5,7 +5,7 @@ class ApplicationController < ActionController::Base
   # Changes to the importmap will invalidate the etag for HTML responses
   stale_when_importmap_changes
 
-  helper_method :current_user, :logged_in?
+  helper_method :current_user, :logged_in?, :current_organization
 
   private
 
@@ -21,5 +21,10 @@ class ApplicationController < ActionController::Base
     unless logged_in?
       redirect_to login_path, alert: "You must be logged in to access this page"
     end
+  end
+
+  def current_organization
+    return nil unless session[:organization_id]
+    @current_organization ||= current_user.organizations.find_by(id: session[:organization_id]) if session[:organization_id]
   end
 end

@@ -9,6 +9,31 @@
 
       <div class="flex items-center space-x-4">
 
+        <% if current_user.organizations.any? %>
+
+          <%= form_with url: organization_switches_path, method: :post do %>
+
+            <select
+              name="organization_id"
+              onchange="this.form.submit()"
+              class="border rounded p-1">
+
+              <% current_user.organizations.each do |org| %>
+
+                <option
+                  value="<%= org.id %>"
+                  <%= "selected" if org == current_organization %>>
+                  <%= org.name %>
+                </option>
+
+              <% end %>
+
+            </select>
+
+          <% end %>
+
+        <% end %>
+
         <span class="text-gray-600">
           <%= current_user.email %>
         </span>

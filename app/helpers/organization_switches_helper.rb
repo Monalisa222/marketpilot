@@ -1,0 +1,2 @@
+module OrganizationSwitchesHelper
+end

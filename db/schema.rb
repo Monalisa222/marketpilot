@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_14_101240) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_14_102413) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -43,6 +43,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_14_101240) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "products", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.text "description"
+    t.bigint "organization_id", null: false
+    t.string "status", default: "active"
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.index ["organization_id"], name: "index_products_on_organization_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "email", null: false
@@ -52,7 +62,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_14_101240) do
     t.index ["email"], name: "index_users_on_email", unique: true
   end
 
+  create_table "variants", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.decimal "price", precision: 10, scale: 2
+    t.bigint "product_id", null: false
+    t.integer "quantity", default: 0
+    t.string "sku", null: false
+    t.datetime "updated_at", null: false
+    t.index ["product_id"], name: "index_variants_on_product_id"
+    t.index ["sku"], name: "index_variants_on_sku", unique: true
+  end
+
   add_foreign_key "marketplace_accounts", "organizations"
   add_foreign_key "memberships", "organizations"
   add_foreign_key "memberships", "users"
+  add_foreign_key "products", "organizations"
+  add_foreign_key "variants", "products"
 end
