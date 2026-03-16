@@ -1,9 +1,9 @@
 module Integrations
   module Adapters
     class BaseAdapter
-
       def initialize(account)
         @account = account
+        @client = MarketplaceApiClient.new(account)
       end
 
       def fetch_products
@@ -21,7 +21,6 @@ module Integrations
       def update_price(sku, price)
         raise NotImplementedError
       end
-
     end
   end
 end
