@@ -43,29 +43,55 @@
               <%= variant.quantity %>
             </td>
 
-            <td class="p-3">
+            <td class="p-3 space-y-3">
 
+              <!-- Price Update -->
               <%= form_with model: variant,
                     url: variant_path(variant),
                     method: :patch,
-                    class: "flex space-x-2" do |f| %>
+                    class: "flex items-center space-x-2" do |f| %>
 
-                <%= f.number_field :price,
-                      value: variant.price,
-                      step: 0.01,
-                      class: "border rounded p-1 w-24" %>
+                <div class="flex flex-col">
+                  <label class="text-xs text-gray-500">Price</label>
+                  <%= f.number_field :price,
+                        value: variant.price,
+                        step: 0.01,
+                        class: "border rounded p-1 w-24" %>
+                </div>
 
-                <%= f.number_field :quantity,
-                      value: variant.quantity,
-                      class: "border rounded p-1 w-24" %>
+                <div class="flex flex-col">
+                  <label class="text-xs text-gray-500">Quantity</label>
+                  <%= f.number_field :quantity,
+                        value: variant.quantity,
+                        class: "border rounded p-1 w-24" %>
+                </div>
 
                 <%= f.submit "Save",
-                      class: "bg-blue-600 text-white px-2 py-1 rounded" %>
+                      class: "bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700" %>
+
+              <% end %>
+
+
+              <!-- Inventory Adjustment -->
+              <%= form_with url: inventory_adjustments_path,
+                    class: "flex items-center space-x-2" do |f| %>
+
+                <%= hidden_field_tag :variant_id, variant.id %>
+
+                <div class="flex flex-col">
+                  <label class="text-xs text-gray-500">Adjust Stock</label>
+                  <%= number_field_tag :quantity_change,
+                        nil,
+                        placeholder: "+10 / -5",
+                        class: "border rounded p-1 w-24" %>
+                </div>
+
+                <%= f.submit "Apply",
+                      class: "bg-indigo-600 text-white px-3 py-1 rounded hover:bg-indigo-700" %>
 
               <% end %>
 
             </td>
-
           </tr>
 
         <% end %>
