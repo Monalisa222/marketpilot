@@ -44,4 +44,6 @@ Rails.application.routes.draw do
   end
 
   resources :listings, only: [ :update, :destroy ]
+
+  resources :repricing_rules, only: [ :create, :update ]
 end
