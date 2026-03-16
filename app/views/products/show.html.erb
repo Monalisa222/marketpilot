@@ -1,4 +1,109 @@
-<div>
-  <h1 class="font-bold text-4xl">Products#show</h1>
-  <p>Find me in app/views/products/show.html.erb</p>
+<div class="max-w-6xl mx-auto">
+
+  <h1 class="text-3xl font-bold mb-6">
+    <%= @product.title %>
+  </h1>
+
+  <div class="mb-8 text-gray-600">
+    <%= @product.description %>
+  </div>
+
+  <div class="bg-white shadow rounded p-6 mb-10">
+
+    <h2 class="text-xl font-semibold mb-4">
+      Variants (SKU)
+    </h2>
+
+    <table class="w-full mb-6">
+
+      <thead class="bg-gray-100">
+        <tr>
+          <th class="p-3 text-left">SKU</th>
+          <th class="p-3 text-left">Price</th>
+          <th class="p-3 text-left">Quantity</th>
+          <th class="p-3 text-left">Update</th>
+        </tr>
+      </thead>
+
+      <tbody>
+
+        <% @product.variants.each do |variant| %>
+
+          <tr class="border-t">
+
+            <td class="p-3">
+              <%= variant.sku %>
+            </td>
+
+            <td class="p-3">
+              <%= variant.price %>
+            </td>
+
+            <td class="p-3">
+              <%= variant.quantity %>
+            </td>
+
+            <td class="p-3">
+
+              <%= form_with model: variant,
+                    url: variant_path(variant),
+                    method: :patch,
+                    class: "flex space-x-2" do |f| %>
+
+                <%= f.number_field :price,
+                      value: variant.price,
+                      step: 0.01,
+                      class: "border rounded p-1 w-24" %>
+
+                <%= f.number_field :quantity,
+                      value: variant.quantity,
+                      class: "border rounded p-1 w-24" %>
+
+                <%= f.submit "Save",
+                      class: "bg-blue-600 text-white px-2 py-1 rounded" %>
+
+              <% end %>
+
+            </td>
+
+          </tr>
+
+        <% end %>
+
+      </tbody>
+
+    </table>
+
+    <h3 class="text-lg font-semibold mb-3">
+      Add Variant
+    </h3>
+
+    <%= form_with model: [@product, Variant.new] do |f| %>
+
+      <%= hidden_field_tag :product_id, @product.id %>
+
+      <div class="flex space-x-4">
+
+        <%= f.text_field :sku,
+              placeholder: "SKU",
+              class: "border rounded p-2" %>
+
+        <%= f.number_field :price,
+              placeholder: "Price",
+              step: 0.01,
+              class: "border rounded p-2" %>
+
+        <%= f.number_field :quantity,
+              placeholder: "Quantity",
+              class: "border rounded p-2" %>
+
+        <%= f.submit "Add",
+              class: "bg-green-600 text-white px-4 py-2 rounded" %>
+
+      </div>
+
+    <% end %>
+
+  </div>
+
 </div>

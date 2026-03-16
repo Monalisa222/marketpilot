@@ -1,4 +1,8 @@
 Rails.application.routes.draw do
+  get "repricing_rules/create"
+  get "repricing_rules/update"
+  get "variants/create"
+  get "variants/update"
   get "listings/create"
   get "organization_switches/create"
   get "products/index"
@@ -31,7 +35,13 @@ Rails.application.routes.draw do
 
   resources :organization_switches, only: [ :create ]
 
-  resources :products
+  resources :products do
+    resources :variants, only: [ :create ]
+  end
 
-  resources :listings, only: [ :create ]
+  resources :variants, only: [ :update, :destroy ] do
+    resources :listings, only: [ :create ]
+  end
+
+  resources :listings, only: [ :update, :destroy ]
 end
