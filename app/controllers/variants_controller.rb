@@ -17,8 +17,8 @@ class VariantsController < ApplicationController
     @variant = Variant.find(params[:id])
 
     if @variant.update(variant_params)
-      InventorySyncService.new(@variant).sync
-      PriceSyncService.new(@variant).sync
+      InventorySyncJob.perform_later(@variant.id)
+      PriceSyncJob.perform_later(@variant.id)
 
       redirect_to product_path(@variant.product), notice: "Variant updated"
     else

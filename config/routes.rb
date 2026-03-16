@@ -1,17 +1,6 @@
+require "sidekiq/web"
+
 Rails.application.routes.draw do
-  get "sync_events/index"
-  get "repricing_rules/create"
-  get "repricing_rules/update"
-  get "variants/create"
-  get "variants/update"
-  get "listings/create"
-  get "organization_switches/create"
-  get "products/index"
-  get "products/new"
-  get "products/create"
-  get "products/show"
-  get "organizations/new"
-  get "organizations/create"
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
@@ -22,6 +11,7 @@ Rails.application.routes.draw do
   # get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
   # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
 
+  mount Sidekiq::Web => "/sidekiq"
   root "sessions#new"
 
   get "signup", to: "registrations#new"
