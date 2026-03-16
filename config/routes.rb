@@ -1,4 +1,5 @@
 Rails.application.routes.draw do
+  get "sync_events/index"
   get "repricing_rules/create"
   get "repricing_rules/update"
   get "variants/create"
@@ -46,4 +47,6 @@ Rails.application.routes.draw do
   resources :listings, only: [ :update, :destroy ]
 
   resources :repricing_rules, only: [ :create, :update ]
+
+  resources :sync_events, only: [ :index ]
 end

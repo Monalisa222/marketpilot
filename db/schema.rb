@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_16_064932) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_16_074503) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -67,6 +67,30 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_16_064932) do
     t.index ["organization_id"], name: "index_products_on_organization_id"
   end
 
+  create_table "repricing_rules", force: :cascade do |t|
+    t.decimal "adjustment", precision: 10, scale: 2
+    t.datetime "created_at", null: false
+    t.bigint "listing_id", null: false
+    t.decimal "max_price", precision: 10, scale: 2
+    t.decimal "min_price", precision: 10, scale: 2
+    t.string "strategy", default: "undercut"
+    t.datetime "updated_at", null: false
+    t.index ["listing_id"], name: "index_repricing_rules_on_listing_id"
+  end
+
+  create_table "sync_events", force: :cascade do |t|
+    t.string "action"
+    t.datetime "created_at", null: false
+    t.text "message"
+    t.bigint "organization_id", null: false
+    t.integer "resource_id"
+    t.string "resource_type"
+    t.string "status"
+    t.datetime "updated_at", null: false
+    t.index ["organization_id"], name: "index_sync_events_on_organization_id"
+    t.index ["resource_type", "resource_id"], name: "index_sync_events_on_resource_type_and_resource_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "email", null: false
@@ -93,5 +117,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_16_064932) do
   add_foreign_key "memberships", "organizations"
   add_foreign_key "memberships", "users"
   add_foreign_key "products", "organizations"
+  add_foreign_key "repricing_rules", "listings"
+  add_foreign_key "sync_events", "organizations"
   add_foreign_key "variants", "products"
 end
