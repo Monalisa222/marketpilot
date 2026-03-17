@@ -69,6 +69,9 @@ module Integrations
                         amount
                       }
                     }
+                    variant {
+                      id
+                    }
                   }
                 }
               }
@@ -88,6 +91,7 @@ module Integrations
               total_price: order["currentTotalPriceSet"]["shopMoney"]["amount"].to_f,
               items: order["lineItems"]["nodes"].map do |item|
                 {
+                  external_variant_id: item.dig("variant", "id")&.split("/")&.last,
                   sku: item["sku"],
                   quantity: item["quantity"],
                   price: item["originalUnitPriceSet"]["shopMoney"]["amount"].to_f
@@ -128,6 +132,16 @@ module Integrations
                     id
                     sku
                     price
+                    inventoryItem {
+                      inventoryLevels(first: 1) {
+                        nodes {
+                          quantities(names: ["available"]) {
+                            name
+                            quantity
+                          }
+                        }
+                      }
+                    }
                   }
                 }
               }
@@ -144,10 +158,16 @@ module Integrations
               external_id: normalize_id(product["id"]),
               title: product["title"],
               variants: product["variants"]["nodes"].map do |variant|
+                levels = variant.dig("inventoryItem", "inventoryLevels", "nodes") || []
+
+                quantity =
+                  levels.first&.dig("quantities")&.find { |q| q["name"] == "available" }&.dig("quantity") || 0
+
                 {
                   external_id: normalize_id(variant["id"]),
                   sku: variant["sku"],
-                  price: variant["price"].to_f
+                  price: variant["price"].to_f,
+                  quantity: quantity
                 }
               end
             }

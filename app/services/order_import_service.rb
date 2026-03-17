@@ -30,15 +30,33 @@ class OrderImportService
 
     order.save!
 
-    # Preload variants to avoid N+1 queries
-    variants = Variant
-      .where(sku: data[:items].map { |i| i[:sku] })
-      .index_by(&:sku)
+    # ✅ Prevent duplicate items
+    existing_variant_ids = order.order_items.pluck(:variant_id)
 
     data[:items].each do |item|
-      variant = variants[item[:sku]]
-      raise "Variant not found for SKU #{item[:sku]}" unless variant
+      # 1. Find listing (marketplace mapping)
+      listing = Listing.find_by(
+        marketplace_account: @account,
+        external_id: item[:external_variant_id]
+      )
 
+      unless listing
+        SyncLoggerService.log(
+          organization: @account.organization,
+          resource: order,
+          action: "order_import_missing_listing",
+          status: "failed",
+          message: "Listing not found for #{item[:external_variant_id]}"
+        )
+        next
+      end
+
+      variant = listing.variant
+
+      # 2. Idempotency check
+      next if existing_variant_ids.include?(variant.id)
+
+      # 3. Create order item
       OrderItem.create!(
         order: order,
         variant: variant,
@@ -46,7 +64,7 @@ class OrderImportService
         price: item[:price]
       )
 
-      # Only deduct inventory for newly created orders
+      # 4. Inventory deduction (only once)
       if new_order
         InventoryTransactionService
           .new(variant, -item[:quantity])
@@ -62,7 +80,6 @@ class OrderImportService
     )
 
   rescue => e
-
     SyncLoggerService.log(
       organization: @account.organization,
       resource: order,
