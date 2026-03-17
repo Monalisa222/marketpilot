@@ -181,6 +181,95 @@ module Integrations
 
         products
       end
+
+      # --------------------------------
+      # Update Inventory
+      # --------------------------------
+
+      def update_price(external_variant_id, price)
+        gid = "gid://shopify/ProductVariant/#{external_variant_id}"
+
+        query = <<~GRAPHQL
+        mutation($productId: ID!, $variants: [ProductVariantsBulkInput!]!) {
+          productVariantsBulkUpdate(productId: $productId, variants: $variants) {
+            productVariants {
+              id
+              price
+            }
+            userErrors {
+              field
+              message
+            }
+          }
+        }
+        GRAPHQL
+
+        # Shopify requires productId also
+        product_gid = get_product_gid_from_variant(gid)
+
+        variables = {
+          productId: product_gid,
+          variants: [
+            {
+              id: gid,
+              price: price.to_s
+            }
+          ]
+        }
+
+        data = graphql_query(query, variables)
+
+        errors = data.dig("productVariantsBulkUpdate", "userErrors")
+
+        if errors.present?
+          SyncLoggerService.log(
+            organization: @account.organization,
+            resource: @account,
+            action: "shopify_price_update",
+            status: "failed",
+            message: "Variant #{external_variant_id} failed: #{errors}"
+          )
+
+          raise "Shopify Price Update Error: #{errors}"
+        end
+
+        SyncLoggerService.log(
+          organization: @account.organization,
+          resource: @account,
+          action: "shopify_price_update",
+          status: "success",
+          message: "Variant #{external_variant_id} updated to price #{price}"
+        )
+
+        data["productVariantsBulkUpdate"]["productVariants"]
+
+      rescue => e
+        SyncLoggerService.log(
+          organization: @account.organization,
+          resource: @account,
+          action: "shopify_price_update",
+          status: "failed",
+          message: e.message
+        )
+
+        raise e
+      end
+
+      def get_product_gid_from_variant(variant_gid)
+        query = <<~GRAPHQL
+        query($id: ID!) {
+          productVariant(id: $id) {
+            product {
+              id
+            }
+          }
+        }
+        GRAPHQL
+
+        data = graphql_query(query, { id: variant_gid })
+
+        data.dig("productVariant", "product", "id")
+      end
     end
   end
 end

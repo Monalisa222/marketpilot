@@ -1,9 +1,12 @@
 class RepricingService
   def initialize(listing)
     @listing = listing
+    @rule = listing.repricing_rule
   end
 
   def run
+    return unless @rule
+
     competitor_price = fetch_competitor_price
 
     new_price = PriceCalculatorService
@@ -19,15 +22,31 @@ class RepricingService
     )
 
     adapter.update_price(
-      @listing.variant.sku,
+      @listing.external_id,
       new_price
+    )
+
+    SyncLoggerService.log(
+      organization: @listing.marketplace_account.organization,
+      resource: @listing,
+      action: "repricing",
+      status: "success"
+    )
+
+  rescue => e
+    SyncLoggerService.log(
+      organization: @listing.marketplace_account.organization,
+      resource: @listing,
+      action: "repricing",
+      status: "failed",
+      message: e.message
     )
   end
 
   private
 
   def fetch_competitor_price
-    # placeholder — marketplace API will provide this
+    # placeholder (can integrate later)
     @listing.price
   end
 end
