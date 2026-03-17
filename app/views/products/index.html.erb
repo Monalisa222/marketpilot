@@ -1,41 +1,70 @@
-<div class="max-w-6xl mx-auto">
+<div class="px-8 py-6">
 
-  <div class="flex justify-between mb-6">
-    <h1 class="text-2xl font-bold">Products</h1>
+  <!-- Header -->
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-semibold text-gray-800">
+      Products
+    </h1>
 
     <%= link_to "New Product",
-        new_product_path,
-        class: "bg-blue-600 text-white px-4 py-2 rounded" %>
+          new_product_path,
+          class: "bg-gray-900 text-white px-4 py-2 rounded-lg text-sm hover:bg-gray-800 transition" %>
   </div>
 
-  <div class="bg-white shadow rounded">
+  <!-- Table Card -->
+  <div class="bg-white border rounded-xl shadow-sm overflow-hidden">
 
-    <table class="w-full">
+    <table class="w-full text-sm">
 
-      <thead class="bg-gray-100">
+      <!-- Head -->
+      <thead class="bg-gray-50 text-gray-600">
         <tr>
-          <th class="p-3 text-left">Title</th>
-          <th class="p-3 text-left">Status</th>
+          <th class="px-6 py-3 text-left font-medium">Title</th>
+          <th class="px-6 py-3 text-left font-medium">Status</th>
         </tr>
       </thead>
 
-      <tbody>
+      <!-- Body -->
+      <tbody class="divide-y">
+
         <% @products.each do |product| %>
 
-          <tr class="border-t">
-            <td class="p-3">
-              <%= link_to product.title, product_path(product) %>
+          <tr class="hover:bg-gray-50 transition">
+
+            <!-- Title -->
+            <td class="px-6 py-4 font-medium text-gray-800">
+              <%= link_to product.title,
+                    product_path(product),
+                    class: "text-blue-600 hover:underline" %>
             </td>
 
-            <td class="p-3">
-              <%= product.status %>
+            <!-- Status -->
+            <td class="px-6 py-4">
+              <span class="px-2 py-1 text-xs rounded-full
+                <%= case product.status
+                    when "active" then "bg-green-100 text-green-700"
+                    when "inactive" then "bg-gray-100 text-gray-600"
+                    when "draft" then "bg-yellow-100 text-yellow-700"
+                    else "bg-gray-100 text-gray-600"
+                    end %>">
+                <%= product.status.capitalize %>
+              </span>
             </td>
+
           </tr>
 
         <% end %>
+
       </tbody>
 
     </table>
+
+    <!-- Empty State -->
+    <% if @products.empty? %>
+      <div class="p-10 text-center text-gray-500">
+        No products available
+      </div>
+    <% end %>
 
   </div>
 

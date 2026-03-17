@@ -1,0 +1,24 @@
+<nav class="bg-white shadow px-6 py-4 flex justify-between items-center">
+
+  <!-- Organization Name -->
+  <div class="text-lg font-semibold">
+    <%= current_organization&.name || "No Organization" %>
+  </div>
+
+  <!-- Right Section -->
+  <div class="flex items-center space-x-4">
+
+    <%= render "shared/organization_switcher" %>
+
+    <span class="text-sm text-gray-600">
+      <%= current_user.email %>
+    </span>
+
+    <%= button_to "Logout",
+        logout_path,
+        method: :delete,
+        class: "bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm" %>
+
+  </div>
+
+</nav>

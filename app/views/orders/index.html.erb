@@ -1,42 +1,66 @@
-<div class="max-w-7xl mx-auto">
+<div class="px-8 py-6">
 
-  <h1 class="text-2xl font-bold mb-6">
-    Orders
-  </h1>
+  <!-- Header -->
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-semibold text-gray-800">
+      Orders
+    </h1>
 
-  <div class="bg-white shadow rounded">
+    <span class="text-sm text-gray-500">
+      <%= @orders.count %> total
+    </span>
+  </div>
 
-    <table class="w-full">
+  <!-- Table Card -->
+  <div class="bg-white border rounded-xl shadow-sm overflow-hidden">
 
-      <thead class="bg-gray-100">
+    <table class="w-full text-sm">
+
+      <!-- Table Head -->
+      <thead class="bg-gray-50 text-gray-600">
         <tr>
-          <th class="p-3 text-left">Order</th>
-          <th class="p-3 text-left">Marketplace</th>
-          <th class="p-3 text-left">Status</th>
-          <th class="p-3 text-left">Total</th>
+          <th class="px-6 py-3 text-left font-medium">Order</th>
+          <th class="px-6 py-3 text-left font-medium">Marketplace</th>
+          <th class="px-6 py-3 text-left font-medium">Status</th>
+          <th class="px-6 py-3 text-left font-medium">Total</th>
         </tr>
       </thead>
 
-      <tbody>
+      <!-- Table Body -->
+      <tbody class="divide-y">
 
         <% @orders.each do |order| %>
 
-          <tr class="border-t">
+          <tr class="hover:bg-gray-50 transition">
 
-            <td class="p-3">
-              <%= link_to order.external_id, order_path(order) %>
+            <!-- Order ID -->
+            <td class="px-6 py-4 font-medium text-gray-800">
+              <%= link_to order.external_id,
+                    order_path(order),
+                    class: "hover:underline text-blue-600" %>
             </td>
 
-            <td class="p-3">
+            <!-- Marketplace -->
+            <td class="px-6 py-4 text-gray-600">
               <%= order.marketplace_account.marketplace %>
             </td>
 
-            <td class="p-3">
-              <%= order.status %>
+            <!-- Status -->
+            <td class="px-6 py-4">
+              <span class="px-2 py-1 text-xs rounded-full
+                <%= case order.status
+                    when "pending" then "bg-yellow-100 text-yellow-700"
+                    when "shipped" then "bg-blue-100 text-blue-700"
+                    when "delivered" then "bg-green-100 text-green-700"
+                    else "bg-gray-100 text-gray-600"
+                    end %>">
+                <%= order.status.capitalize %>
+              </span>
             </td>
 
-            <td class="p-3">
-              <%= order.total_price %>
+            <!-- Total -->
+            <td class="px-6 py-4 text-gray-800 font-medium">
+              ₹ <%= order.total_price %>
             </td>
 
           </tr>
@@ -46,6 +70,13 @@
       </tbody>
 
     </table>
+
+    <!-- Empty State -->
+    <% if @orders.empty? %>
+      <div class="p-10 text-center text-gray-500">
+        No orders found
+      </div>
+    <% end %>
 
   </div>
 

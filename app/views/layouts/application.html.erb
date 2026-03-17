@@ -23,14 +23,30 @@
     <%= javascript_importmap_tags %>
   </head>
 
-  <body class="bg-gray-50">
+  <body class="bg-gray-100 text-gray-800 m-0">
 
-    <%= render "layouts/navbar" %>
-    <%= render "shared/flash" %>
+    <!-- Flash Messages -->
+    <div class="fixed top-4 right-4 z-50 w-80">
+      <%= render "shared/flash" %>
+    </div>
 
-    <main class="container mx-auto px-5 py-6">
+    <% if logged_in? %>
+
+      <%= render "shared/sidebar" %>
+
+      <div class="ml-64 min-h-screen">
+
+        <%= render "shared/navbar" %>
+
+        <main class="p-6">
+          <%= yield %>
+        </main>
+
+      </div>
+
+    <% else %>
       <%= yield %>
-    </main>
+    <% end %>
 
   </body>
 </html>

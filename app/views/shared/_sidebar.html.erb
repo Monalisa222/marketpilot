@@ -1,0 +1,55 @@
+<div class="w-64 bg-white border-r h-screen fixed flex flex-col justify-between">
+
+  <!-- Logo -->
+  <div>
+    <div class="p-5 text-2xl font-bold text-blue-600 border-b">
+      MarketPilot
+    </div>
+
+    <!-- Navigation -->
+    <nav class="p-4 space-y-2 text-sm">
+
+      <%= link_to dashboard_path,
+          class: "flex items-center gap-3 p-3 rounded-lg transition #{current_page?(dashboard_path) ? 'bg-blue-50 text-blue-600 font-semibold' : 'text-gray-700 hover:bg-gray-100'}" do %>
+        <span>🏠</span>
+        Dashboard
+      <% end %>
+
+      <%= link_to products_path,
+          class: "flex items-center gap-3 p-3 rounded-lg transition #{current_page?(products_path) ? 'bg-blue-50 text-blue-600 font-semibold' : 'text-gray-700 hover:bg-gray-100'}" do %>
+        <span>📦</span>
+        Products
+      <% end %>
+
+      <%= link_to orders_path,
+          class: "flex items-center gap-3 p-3 rounded-lg transition #{current_page?(orders_path) ? 'bg-blue-50 text-blue-600 font-semibold' : 'text-gray-700 hover:bg-gray-100'}" do %>
+        <span>🧾</span>
+        Orders
+      <% end %>
+
+      <%= link_to sync_events_path,
+          class: "flex items-center gap-3 p-3 rounded-lg transition #{current_page?(sync_events_path) ? 'bg-blue-50 text-blue-600 font-semibold' : 'text-gray-700 hover:bg-gray-100'}" do %>
+        <span>🔄</span>
+        Sync Monitoring
+      <% end %>
+
+    </nav>
+  </div>
+
+  <!-- Bottom Section (User / Org Info) -->
+  <div class="p-4 border-t">
+
+    <% if current_organization %>
+      <div class="text-sm text-gray-600">
+        <p class="font-medium text-gray-800 truncate">
+          <%= current_organization.name %>
+        </p>
+        <p class="text-xs text-gray-400">
+          Active Organization
+        </p>
+      </div>
+    <% end %>
+
+  </div>
+
+</div>

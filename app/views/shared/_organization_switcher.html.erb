@@ -1,0 +1,16 @@
+<%= form_with url: organization_switches_path, method: :post, local: true do %>
+
+  <select name="organization_id"
+          onchange="this.form.submit()"
+          class="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+
+    <% current_user.organizations.each do |org| %>
+      <option value="<%= org.id %>"
+        <%= "selected" if org == current_organization %>>
+        <%= org.name %>
+      </option>
+    <% end %>
+
+  </select>
+
+<% end %>
