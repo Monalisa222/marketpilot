@@ -27,6 +27,12 @@
         Orders
       <% end %>
 
+      <%= link_to marketplace_accounts_path,
+          class: "flex items-center gap-3 p-3 rounded-lg transition #{current_page?(marketplace_accounts_path) ? 'bg-blue-50 text-blue-600 font-semibold' : 'text-gray-700 hover:bg-gray-100'}" do %>
+        <span>🧾</span>
+        Marketplace Accounts
+      <% end %>
+
       <%= link_to sync_events_path,
           class: "flex items-center gap-3 p-3 rounded-lg transition #{current_page?(sync_events_path) ? 'bg-blue-50 text-blue-600 font-semibold' : 'text-gray-700 hover:bg-gray-100'}" do %>
         <span>🔄</span>

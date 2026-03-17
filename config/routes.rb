@@ -1,6 +1,9 @@
 require "sidekiq/web"
 
 Rails.application.routes.draw do
+  get "marketplace_accounts/index"
+  get "marketplace_accounts/new"
+  get "marketplace_accounts/create"
   get "orders/index"
   get "orders/show"
   get "inventory_adjustments/create"
@@ -46,4 +49,6 @@ Rails.application.routes.draw do
   resources :inventory_adjustments, only: [ :create ]
 
   resources :orders, only: [ :index, :show ]
+
+  resources :marketplace_accounts, only: [ :index, :new, :create ]
 end

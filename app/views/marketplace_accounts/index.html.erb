@@ -1,0 +1,69 @@
+<div class="px-8 py-6">
+
+  <!-- Header -->
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-semibold text-gray-800">
+      Marketplace Accounts
+    </h1>
+
+    <%= link_to "Connect Account",
+          new_marketplace_account_path,
+          class: "bg-gray-900 text-white px-4 py-2 rounded-lg text-sm hover:bg-gray-800 transition" %>
+  </div>
+
+  <!-- Table Card -->
+  <div class="bg-white border rounded-xl shadow-sm overflow-hidden">
+
+    <table class="w-full text-sm">
+
+      <!-- Head -->
+      <thead class="bg-gray-50 text-gray-600">
+        <tr>
+          <th class="px-6 py-3 text-left font-medium">Marketplace</th>
+          <th class="px-6 py-3 text-left font-medium">Status</th>
+        </tr>
+      </thead>
+
+      <!-- Body -->
+      <tbody class="divide-y">
+
+        <% @accounts.each do |account| %>
+
+          <tr class="hover:bg-gray-50 transition">
+
+            <!-- Marketplace -->
+            <td class="px-6 py-4 font-medium text-gray-800">
+              <%= account.marketplace.capitalize %>
+            </td>
+
+            <!-- Status -->
+            <td class="px-6 py-4">
+              <span class="px-2 py-1 text-xs rounded-full
+                <%= case account.status
+                    when "connected" then "bg-green-100 text-green-700"
+                    when "disconnected" then "bg-red-100 text-red-700"
+                    when "pending" then "bg-yellow-100 text-yellow-700"
+                    else "bg-gray-100 text-gray-600"
+                    end %>">
+                <%= account.status.capitalize %>
+              </span>
+            </td>
+
+          </tr>
+
+        <% end %>
+
+      </tbody>
+
+    </table>
+
+    <!-- Empty State -->
+    <% if @accounts.empty? %>
+      <div class="p-10 text-center text-gray-500">
+        No marketplace accounts connected
+      </div>
+    <% end %>
+
+  </div>
+
+</div>
