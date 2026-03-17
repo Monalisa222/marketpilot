@@ -19,6 +19,7 @@
       <!-- Head -->
       <thead class="bg-gray-50 text-gray-600">
         <tr>
+          <th class="px-6 py-3 text-left font-medium">Account Name</th>
           <th class="px-6 py-3 text-left font-medium">Marketplace</th>
           <th class="px-6 py-3 text-left font-medium">Status</th>
         </tr>
@@ -30,6 +31,10 @@
         <% @accounts.each do |account| %>
 
           <tr class="hover:bg-gray-50 transition">
+            <!-- Account Name -->
+            <td class="px-6 py-4 font-medium text-gray-800">
+              <%= account.account_name %>
+            </td>
 
             <!-- Marketplace -->
             <td class="px-6 py-4 font-medium text-gray-800">

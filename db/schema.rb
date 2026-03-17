@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_16_095752) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_17_101512) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -29,14 +29,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_16_095752) do
   end
 
   create_table "marketplace_accounts", force: :cascade do |t|
-    t.string "api_key"
-    t.string "api_secret"
+    t.string "account_name"
     t.datetime "created_at", null: false
+    t.jsonb "credentials", default: {}
     t.string "marketplace", null: false
     t.bigint "organization_id", null: false
     t.string "status", default: "active", null: false
     t.datetime "updated_at", null: false
-    t.index ["organization_id", "marketplace"], name: "index_marketplace_accounts_on_organization_id_and_marketplace", unique: true
+    t.index ["organization_id", "account_name"], name: "index_marketplace_accounts_on_organization_id_and_account_name", unique: true
     t.index ["organization_id"], name: "index_marketplace_accounts_on_organization_id"
   end
 

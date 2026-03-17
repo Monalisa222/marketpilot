@@ -17,34 +17,31 @@
 
       <%= render "shared/form_errors", object: @account %>
 
+      <!-- Account Name -->
+      <div class="mb-5">
+        <%= f.label :account_name, class: "block text-sm font-medium text-gray-700 mb-1" %>
+        <%= f.text_field :account_name,
+              class: "w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900",
+              placeholder: "e.g. My Shopify Store" %>
+      </div>
+
       <!-- Marketplace -->
       <div class="mb-5">
         <%= f.label :marketplace, class: "block text-sm font-medium text-gray-700 mb-1" %>
+
         <%= f.select :marketplace,
-              ["shopify", "ebay"],
+              MarketplaceConfigService.marketplaces.map { |mp| [MarketplaceConfigService.name_for(mp), mp] },
               {},
+              id: "marketplace_select",
               class: "w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900" %>
       </div>
 
-      <!-- API Key -->
-      <div class="mb-5">
-        <%= f.label :api_key, class: "block text-sm font-medium text-gray-700 mb-1" %>
-        <%= f.text_field :api_key,
-              class: "w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900",
-              placeholder: "Enter API key" %>
-      </div>
-
-      <!-- API Secret -->
-      <div class="mb-6">
-        <%= f.label :api_secret, class: "block text-sm font-medium text-gray-700 mb-1" %>
-        <%= f.text_field :api_secret,
-              class: "w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900",
-              placeholder: "Enter API secret" %>
-      </div>
+      <!-- Dynamic Fields -->
+      <div id="credentials_fields" class="space-y-5"></div>
 
       <!-- Submit -->
-      <div class="flex justify-end">
-        <%= f.submit "Connect",
+      <div class="mt-6 flex justify-end">
+        <%= f.submit "Connect Account",
               class: "bg-gray-900 text-white px-5 py-2 rounded-lg text-sm hover:bg-gray-800 transition" %>
       </div>
 
@@ -53,3 +50,59 @@
   </div>
 
 </div>
+
+
+<script>
+  document.addEventListener("turbo:load", function () {
+
+    const config = <%= raw MarketplaceConfigService.config.to_json %>
+
+    const select = document.getElementById("marketplace_select")
+    const container = document.getElementById("credentials_fields")
+
+    if (!select || !container) return
+
+    function formatLabel(text) {
+      return text.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase())
+    }
+
+    function renderFields(marketplace) {
+      container.innerHTML = ""
+
+      if (!config[marketplace]) return
+
+      config[marketplace]["credentials"].forEach(field => {
+
+        const isSecret = field.includes("secret") || field.includes("key")
+
+        const fieldHTML = `
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">
+              ${formatLabel(field)}
+              <span class="text-red-500">*</span>
+            </label>
+
+            <input type="${isSecret ? 'password' : 'text'}"
+                  name="credentials[${field}]"
+                  placeholder="Enter ${formatLabel(field)}"
+                  required
+                  class="w-full border rounded-lg px-3 py-2 text-sm 
+                          focus:outline-none focus:ring-2 focus:ring-gray-900 transition">
+          </div>
+        `
+
+        container.insertAdjacentHTML("beforeend", fieldHTML)
+      })
+    }
+
+
+    // Change event
+    select.addEventListener("change", function () {
+      renderFields(this.value)
+    })
+
+    // Initial load
+    renderFields(select.value)
+
+  })
+</script>
