@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_16_074503) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_16_095752) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -49,6 +49,30 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_16_074503) do
     t.index ["organization_id"], name: "index_memberships_on_organization_id"
     t.index ["user_id", "organization_id"], name: "index_memberships_on_user_id_and_organization_id", unique: true
     t.index ["user_id"], name: "index_memberships_on_user_id"
+  end
+
+  create_table "order_items", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "order_id", null: false
+    t.decimal "price", precision: 10, scale: 2
+    t.integer "quantity"
+    t.datetime "updated_at", null: false
+    t.bigint "variant_id", null: false
+    t.index ["order_id"], name: "index_order_items_on_order_id"
+    t.index ["variant_id"], name: "index_order_items_on_variant_id"
+  end
+
+  create_table "orders", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "external_id"
+    t.bigint "marketplace_account_id", null: false
+    t.bigint "organization_id", null: false
+    t.string "status"
+    t.decimal "total_price", precision: 10, scale: 2
+    t.datetime "updated_at", null: false
+    t.index ["marketplace_account_id", "external_id"], name: "index_orders_on_marketplace_account_id_and_external_id", unique: true
+    t.index ["marketplace_account_id"], name: "index_orders_on_marketplace_account_id"
+    t.index ["organization_id"], name: "index_orders_on_organization_id"
   end
 
   create_table "organizations", force: :cascade do |t|
@@ -116,6 +140,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_16_074503) do
   add_foreign_key "marketplace_accounts", "organizations"
   add_foreign_key "memberships", "organizations"
   add_foreign_key "memberships", "users"
+  add_foreign_key "order_items", "orders"
+  add_foreign_key "order_items", "variants"
+  add_foreign_key "orders", "marketplace_accounts"
+  add_foreign_key "orders", "organizations"
   add_foreign_key "products", "organizations"
   add_foreign_key "repricing_rules", "listings"
   add_foreign_key "sync_events", "organizations"

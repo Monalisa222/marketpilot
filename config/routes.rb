@@ -1,6 +1,8 @@
 require "sidekiq/web"
 
 Rails.application.routes.draw do
+  get "orders/index"
+  get "orders/show"
   get "inventory_adjustments/create"
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
@@ -42,4 +44,6 @@ Rails.application.routes.draw do
   resources :sync_events, only: [ :index ]
 
   resources :inventory_adjustments, only: [ :create ]
+
+  resources :orders, only: [ :index, :show ]
 end
