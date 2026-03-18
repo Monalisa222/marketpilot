@@ -43,9 +43,9 @@ Rails.application.routes.draw do
     resources :listings, only: [ :create ]
   end
 
-  resources :listings, only: [ :index, :update, :destroy, :edit ]
-
-  resources :repricing_rules, only: [ :new, :create, :update ]
+  resources :listings, only: [ :index, :update, :destroy, :edit ] do
+    resources :repricing_rules, only: [ :new, :create, :update ]
+  end
 
   resources :sync_events, only: [ :index ]
 
@@ -54,4 +54,12 @@ Rails.application.routes.draw do
   resources :orders, only: [ :index, :show ]
 
   resources :marketplace_accounts, only: [ :index, :new, :create ]
+
+  resources :sync, only: [ :index ] do
+    collection do
+      post :sync_orders
+      post :sync_products
+      post :sync_repricing
+    end
+  end
 end

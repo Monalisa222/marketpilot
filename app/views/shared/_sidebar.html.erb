@@ -39,6 +39,12 @@
         Sync Monitoring
       <% end %>
 
+      <%= link_to sync_index_path,
+          class: "flex items-center gap-3 p-3 rounded-lg transition #{current_page?(sync_index_path) ? 'bg-blue-50 text-blue-600 font-semibold' : 'text-gray-700 hover:bg-gray-100'}" do %>
+        <span>🔄</span>
+        Sync Dashboard
+      <% end %>
+
     </nav>
   </div>
 
