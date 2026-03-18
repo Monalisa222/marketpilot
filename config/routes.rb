@@ -62,4 +62,11 @@ Rails.application.routes.draw do
       post :sync_repricing
     end
   end
+
+  namespace :webhooks do
+    namespace :shopify do
+      post :orders_create
+      post :products_update
+    end
+  end
 end
