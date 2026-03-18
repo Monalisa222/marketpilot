@@ -5,11 +5,12 @@ class InventorySyncService
 
   def sync
     @variant.listings.each do |listing|
+      listing.update!(quantity: @variant.quantity)
       adapter = MarketplaceAdapterResolver.for(listing.marketplace_account)
 
       adapter.update_inventory(
-        @variant.sku,
-        @variant.quantity
+        listing.external_id,
+        listing.quantity
       )
 
       SyncLoggerService.log(

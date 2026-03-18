@@ -183,7 +183,7 @@ module Integrations
       end
 
       # --------------------------------
-      # Update Inventory
+      # Update Price
       # --------------------------------
 
       def update_price(external_variant_id, price)
@@ -255,6 +255,110 @@ module Integrations
         raise e
       end
 
+      # --------------------------------
+      # Update Inventory
+      # --------------------------------
+      def update_inventory(external_variant_id, new_quantity)
+        variant_gid = "gid://shopify/ProductVariant/#{external_variant_id}"
+
+        # 1. Get inventoryItemId
+        inventory_item_gid = get_inventory_item_gid(variant_gid)
+
+        # 2. Get locationId
+        location_gid = get_inventory_location_gid(inventory_item_gid)
+
+        unless location_gid
+          SyncLoggerService.log(
+            organization: @account.organization,
+            resource: @account,
+            action: "shopify_inventory_update",
+            status: "failed",
+            message: "No inventory location found for variant #{external_variant_id}"
+          )
+          return
+        end
+
+        # 3. Get current quantity from Shopify
+        current_quantity = get_current_inventory(inventory_item_gid, location_gid)
+
+        # 4. Calculate delta
+        delta = new_quantity - current_quantity
+
+        # No change needed
+        if delta == 0
+          SyncLoggerService.log(
+            organization: @account.organization,
+            resource: @account,
+            action: "shopify_inventory_update",
+            status: "skipped",
+            message: "Variant #{external_variant_id} already at #{new_quantity}"
+          )
+          return
+        end
+
+        # 5. Apply delta
+        query = <<~GRAPHQL
+        mutation($input: InventoryAdjustQuantitiesInput!) {
+          inventoryAdjustQuantities(input: $input) {
+            userErrors {
+              field
+              message
+            }
+          }
+        }
+        GRAPHQL
+
+        variables = {
+          input: {
+            reason: "correction",
+            name: "available",
+            changes: [
+              {
+                inventoryItemId: inventory_item_gid,
+                locationId: location_gid,
+                delta: delta
+              }
+            ]
+          }
+        }
+
+        data = graphql_query(query, variables)
+
+        errors = data.dig("inventoryAdjustQuantities", "userErrors")
+
+        if errors.present?
+          SyncLoggerService.log(
+            organization: @account.organization,
+            resource: @account,
+            action: "shopify_inventory_update",
+            status: "failed",
+            message: "Variant #{external_variant_id} failed: #{errors}"
+          )
+          raise "Shopify Inventory Error: #{errors}"
+        end
+
+        SyncLoggerService.log(
+          organization: @account.organization,
+          resource: @account,
+          action: "shopify_inventory_update",
+          status: "success",
+          message: "Variant #{external_variant_id}: #{current_quantity} → #{new_quantity} (delta #{delta})"
+        )
+
+      rescue => e
+        SyncLoggerService.log(
+          organization: @account.organization,
+          resource: @account,
+          action: "shopify_inventory_update",
+          status: "failed",
+          message: e.message
+        )
+        raise e
+      end
+
+      # --------------------------------
+      # Helper to get Product GID from Variant GID
+      # --------------------------------
       def get_product_gid_from_variant(variant_gid)
         query = <<~GRAPHQL
         query($id: ID!) {
@@ -269,6 +373,73 @@ module Integrations
         data = graphql_query(query, { id: variant_gid })
 
         data.dig("productVariant", "product", "id")
+      end
+
+      def get_inventory_item_gid(variant_gid)
+        query = <<~GRAPHQL
+        query($id: ID!) {
+          productVariant(id: $id) {
+            inventoryItem {
+              id
+            }
+          }
+        }
+        GRAPHQL
+
+        data = graphql_query(query, { id: variant_gid })
+
+        data.dig("productVariant", "inventoryItem", "id")
+      end
+
+      def get_current_inventory(inventory_item_gid, location_gid)
+        query = <<~GRAPHQL
+        query($inventoryItemId: ID!) {
+          inventoryItem(id: $inventoryItemId) {
+            inventoryLevels(first: 10) {
+              nodes {
+                location {
+                  id
+                }
+                quantities(names: ["available"]) {
+                  name
+                  quantity
+                }
+              }
+            }
+          }
+        }
+        GRAPHQL
+
+        data = graphql_query(query, { inventoryItemId: inventory_item_gid })
+
+        levels = data.dig("inventoryItem", "inventoryLevels", "nodes") || []
+
+        level = levels.find { |l| l.dig("location", "id") == location_gid }
+
+        level&.dig("quantities")&.find { |q| q["name"] == "available" }&.dig("quantity") || 0
+      end
+
+      def get_inventory_location_gid(inventory_item_gid)
+        query = <<~GRAPHQL
+        query($inventoryItemId: ID!) {
+          inventoryItem(id: $inventoryItemId) {
+            inventoryLevels(first: 10) {
+              nodes {
+                location {
+                  id
+                }
+              }
+            }
+          }
+        }
+        GRAPHQL
+
+        data = graphql_query(query, { inventoryItemId: inventory_item_gid })
+
+        levels = data.dig("inventoryItem", "inventoryLevels", "nodes") || []
+
+        # 👉 return first valid location where item exists
+        levels.first&.dig("location", "id")
       end
     end
   end
