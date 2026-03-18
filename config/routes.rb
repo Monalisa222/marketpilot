@@ -43,9 +43,9 @@ Rails.application.routes.draw do
     resources :listings, only: [ :create ]
   end
 
-  resources :listings, only: [ :update, :destroy ]
+  resources :listings, only: [ :index, :update, :destroy, :edit ]
 
-  resources :repricing_rules, only: [ :create, :update ]
+  resources :repricing_rules, only: [ :new, :create, :update ]
 
   resources :sync_events, only: [ :index ]
 

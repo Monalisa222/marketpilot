@@ -64,6 +64,15 @@
                 </span>
               </td>
 
+              <!-- Listings -->
+              <td class="px-6 py-4">
+                <%= link_to listings_path(product_id: product.id),
+                      class: "text-sm text-blue-600 hover:underline font-medium" do %>
+                  <%= product.listings_count %> Listings
+                <% end %>
+              </td>
+
+
             </tr>
 
           <% end %>

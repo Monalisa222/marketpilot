@@ -1,0 +1,89 @@
+<div class="px-8 py-6">
+
+  <!-- Header -->
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-semibold text-gray-800">
+      Listings
+    </h1>
+
+    <span class="text-sm text-gray-500">
+      <%= @listings.count %> total
+    </span>
+  </div>
+
+  <!-- Table Card -->
+  <div class="bg-white border rounded-xl shadow-sm overflow-hidden">
+
+    <table class="w-full text-sm">
+
+      <!-- Head -->
+      <thead class="bg-gray-50 text-gray-600">
+        <tr>
+          <th class="px-6 py-3 text-left font-medium">Marketplace</th>
+          <th class="px-6 py-3 text-left font-medium">SKU</th>
+          <th class="px-6 py-3 text-left font-medium">Price</th>
+          <th class="px-6 py-3 text-left font-medium">Quantity</th>
+          <th class="px-6 py-3 text-left font-medium">Action</th>
+        </tr>
+      </thead>
+
+      <!-- Body -->
+      <tbody class="divide-y">
+
+        <% @listings.each do |listing| %>
+
+          <tr class="hover:bg-gray-50 transition">
+
+            <!-- Marketplace -->
+            <td class="px-6 py-4 font-medium text-gray-800">
+              <%= listing.marketplace_account.account_name %>
+            </td>
+
+            <!-- SKU -->
+            <td class="px-6 py-4 text-gray-600">
+              <%= listing.variant.sku.presence || "-" %>
+            </td>
+
+            <!-- Price -->
+            <td class="px-6 py-4 font-medium text-gray-800">
+              ₹ <%= listing.price %>
+            </td>
+
+            <!-- Quantity -->
+            <td class="px-6 py-4">
+              <span class="px-2 py-1 text-xs rounded-full
+                <%= listing.quantity.to_i > 0 ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700" %>">
+                <%= listing.quantity %>
+              </span>
+            </td>
+
+            <!-- Action -->
+            <td class="px-6 py-4 flex items-center gap-2">
+
+              <%= link_to "Edit",
+                    edit_listing_path(listing),
+                    class: "px-2 py-1 text-xs rounded bg-gray-100 text-gray-700 hover:bg-gray-200" %>
+
+              <%= link_to "Reprice",
+                    new_repricing_rule_path(listing_id: listing.id),
+                    class: "px-2 py-1 text-xs rounded bg-green-100 text-green-700 hover:bg-green-200" %>
+
+            </td>
+          </tr>
+
+        <% end %>
+
+      </tbody>
+
+    </table>
+
+    <!-- Empty State -->
+    <% if @listings.empty? %>
+      <div class="p-10 text-center text-gray-500">
+        No listings available
+      </div>
+    <% end %>
+
+  </div>
+
+</div>

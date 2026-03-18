@@ -1,0 +1,34 @@
+<div class="max-w-xl mx-auto">
+
+  <h1 class="text-xl font-bold mb-6">
+    Repricing Rule
+  </h1>
+
+  <%= form_with model: [@listing, @rule] do |f| %>
+
+    <div class="mb-4">
+      <%= f.label :min_price %>
+      <%= f.number_field :min_price, class: "w-full border p-2" %>
+    </div>
+
+    <div class="mb-4">
+      <%= f.label :max_price %>
+      <%= f.number_field :max_price, class: "w-full border p-2" %>
+    </div>
+
+    <div class="mb-4">
+      <%= f.label :adjustment %>
+      <%= f.number_field :adjustment, class: "w-full border p-2" %>
+    </div>
+
+    <div class="mb-4">
+      <%= f.label :strategy %>
+      <%= f.select :strategy, ["undercut", "match"], {}, class: "w-full border p-2" %>
+    </div>
+
+    <%= f.submit "Save",
+        class: "bg-green-600 text-white px-4 py-2 rounded" %>
+
+  <% end %>
+
+</div>

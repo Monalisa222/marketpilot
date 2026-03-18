@@ -1,24 +1,31 @@
 class RepricingRulesController < ApplicationController
   before_action :require_login
 
+  def new
+    @listing = Listing.find(params[:listing_id])
+    @rule = @listing.build_repricing_rule
+  end
+
   def create
     listing = Listing.find(params[:listing_id])
-
     listing.create_repricing_rule!(rule_params)
 
-    redirect_to product_path(listing.variant.product),
+    redirect_to listings_path(product_id: listing.variant.product_id),
       notice: "Repricing rule created"
   end
 
-  def update
-    rule = RepricingRule.find(params[:id])
+  def edit
+    @rule = RepricingRule.find(params[:id])
+  end
 
-    if rule.update(rule_params)
-      redirect_to product_path(rule.listing.variant.product),
+  def update
+    @rule = RepricingRule.find(params[:id])
+
+    if @rule.update(rule_params)
+      redirect_to listings_path(product_id: @rule.listing.variant.product_id),
         notice: "Repricing rule updated"
     else
-      redirect_to product_path(rule.listing.variant.product),
-        alert: rule.errors.full_messages.join(", ")
+      render :edit, status: :unprocessable_entity
     end
   end
 
