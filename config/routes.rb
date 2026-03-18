@@ -34,6 +34,9 @@ Rails.application.routes.draw do
 
   resources :products do
     resources :variants, only: [ :create ]
+    collection do
+      post :bulk_push
+    end
   end
 
   resources :variants, only: [ :update, :destroy ] do
