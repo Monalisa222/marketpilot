@@ -3,5 +3,5 @@ class Variant < ApplicationRecord
 
   has_many :listings, dependent: :destroy
 
-  validates :sku, presence: true, uniqueness: true
+  validates :sku, presence: true, uniqueness: { scope: :product_id }
 end

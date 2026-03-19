@@ -1,6 +1,6 @@
 class SyncController < ApplicationController
   def index
-    @accounts = MarketplaceAccount.all
+    @accounts = current_organization.marketplace_accounts
   end
 
   def sync_orders

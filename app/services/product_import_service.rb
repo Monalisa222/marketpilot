@@ -15,6 +15,8 @@ class ProductImportService < BaseService
       create_or_update_product(data)
     end
 
+    ProductCacheService.clear(@account.organization)
+
   rescue => e
     log_failure("fetch_products", e.message)
   end

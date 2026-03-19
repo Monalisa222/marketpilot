@@ -18,7 +18,7 @@ Rails.application.routes.draw do
   # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
 
   mount Sidekiq::Web => "/sidekiq"
-  root "sessions#new"
+  root "dashboard#index"
 
   get "signup", to: "registrations#new"
   post "registrations", to: "registrations#create"
