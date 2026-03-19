@@ -29,16 +29,16 @@ module Integrations
       private
 
       # --------------------------------
-      # IDEMPOTENCY (USING LISTINGS)
+      # IDEMPOTENCY (FIXED)
       # --------------------------------
       def already_pushed?
-        @product.variants.all? do |variant|
-          variant.listings.exists?(marketplace_account_id: @account.id)
-        end
+        @product.variants.joins(:listings)
+                .where(listings: { marketplace_account_id: @account.id })
+                .exists?
       end
 
       # --------------------------------
-      # STEP 1: CREATE PRODUCT
+      # CREATE PRODUCT
       # --------------------------------
       def create_product
         data = @client.call(product_mutation, product_variables)
@@ -75,19 +75,22 @@ module Integrations
       end
 
       # --------------------------------
-      # STEP 2: HANDLE VARIANTS
+      # HANDLE VARIANTS
       # --------------------------------
       def create_variants(product_gid)
         return if @product.variants.blank?
 
-        # 1. Get default Shopify variant
-        default_variant_gid = fetch_default_variant_id(product_gid)
+        variant_gid, inventory_item_id = fetch_default_variant_data(product_gid)
 
-        # 2. Update default variant with first local variant
         first_variant = @product.variants.first
-        update_default_variant(product_gid, default_variant_gid, first_variant)
 
-        # 3. Create remaining variants
+        update_default_variant(product_gid, variant_gid, first_variant)
+
+        # 🔥 IMPORTANT FIX FLOW
+        activate_inventory_if_needed(inventory_item_id)
+        adjust_inventory(inventory_item_id, first_variant.quantity || 0)
+
+        # Remaining variants
         remaining_variants = @product.variants.drop(1)
         return if remaining_variants.blank?
 
@@ -105,20 +108,24 @@ module Integrations
       # --------------------------------
       # FETCH DEFAULT VARIANT
       # --------------------------------
-      def fetch_default_variant_id(product_gid)
+      def fetch_default_variant_data(product_gid)
         data = @client.call(<<~GRAPHQL, { id: product_gid })
         query($id: ID!) {
           product(id: $id) {
             variants(first: 1) {
               nodes {
                 id
+                inventoryItem {
+                  id
+                }
               }
             }
           }
         }
         GRAPHQL
 
-        data.dig("product", "variants", "nodes", 0, "id")
+        node = data.dig("product", "variants", "nodes", 0)
+        [ node["id"], node.dig("inventoryItem", "id") ]
       end
 
       # --------------------------------
@@ -126,14 +133,14 @@ module Integrations
       # --------------------------------
       def update_default_variant(product_gid, variant_gid, variant)
         query = <<~GRAPHQL
-          mutation($productId: ID!, $variants: [ProductVariantsBulkInput!]!) {
-            productVariantsBulkUpdate(productId: $productId, variants: $variants) {
-              userErrors {
-                field
-                message
-              }
+        mutation($productId: ID!, $variants: [ProductVariantsBulkInput!]!) {
+          productVariantsBulkUpdate(productId: $productId, variants: $variants) {
+            userErrors {
+              field
+              message
             }
           }
+        }
         GRAPHQL
 
         variables = {
@@ -143,7 +150,8 @@ module Integrations
               id: variant_gid,
               price: variant.price.to_s,
               inventoryItem: {
-                sku: variant.sku || "SKU-#{variant.id}"
+                sku: variant.sku || "SKU-#{variant.id}",
+                tracked: true
               }
             }
           ]
@@ -184,7 +192,8 @@ module Integrations
             {
               price: variant.price.to_s,
               inventoryItem: {
-                sku: variant.sku || "SKU-#{variant.id}"
+                sku: variant.sku || "SKU-#{variant.id}",
+                tracked: true
               },
               inventoryQuantities: [
                 {
@@ -198,7 +207,92 @@ module Integrations
       end
 
       # --------------------------------
-      # LISTINGS (MAPPING LAYER)
+      # INVENTORY LOCATION HELPERS
+      # --------------------------------
+      def fetch_inventory_location(inventory_item_id)
+        data = @client.call(<<~GRAPHQL, { id: inventory_item_id })
+        query($id: ID!) {
+          inventoryItem(id: $id) {
+            inventoryLevels(first: 1) {
+              nodes {
+                location {
+                  id
+                }
+              }
+            }
+          }
+        }
+        GRAPHQL
+
+        data.dig("inventoryItem", "inventoryLevels", "nodes", 0, "location", "id")
+      end
+
+      def activate_inventory_if_needed(inventory_item_id)
+        existing_location = fetch_inventory_location(inventory_item_id)
+        return if existing_location.present?  # ✅ already linked
+
+        query = <<~GRAPHQL
+        mutation($inventoryItemId: ID!, $locationId: ID!) {
+          inventoryActivate(inventoryItemId: $inventoryItemId, locationId: $locationId) {
+            userErrors {
+              message
+            }
+          }
+        }
+        GRAPHQL
+
+        variables = {
+          inventoryItemId: inventory_item_id,
+          locationId: default_location_gid
+        }
+
+        @client.call(query, variables)
+      end
+
+      # --------------------------------
+      # INVENTORY ADJUST (FIXED)
+      # --------------------------------
+      def adjust_inventory(inventory_item_id, quantity)
+        location_id = fetch_inventory_location(inventory_item_id) || default_location_gid
+
+        query = <<~GRAPHQL
+        mutation($input: InventoryAdjustQuantitiesInput!) {
+          inventoryAdjustQuantities(input: $input) {
+            userErrors {
+              message
+            }
+          }
+        }
+        GRAPHQL
+
+        variables = {
+          input: {
+            reason: "correction",
+            name: "available",
+            changes: [
+              {
+                inventoryItemId: inventory_item_id,
+                locationId: location_id,
+                delta: quantity
+              }
+            ]
+          }
+        }
+
+        3.times do
+          response = @client.call(query, variables)
+          errors = response.dig("inventoryAdjustQuantities", "userErrors")
+
+          return if errors.blank?
+
+          sleep 1
+        end
+
+        raise "Inventory update failed"
+      end
+
+      # --------------------------------
+      # LISTINGS
       # --------------------------------
       def create_listing(variant, gid)
         Listing.create!(

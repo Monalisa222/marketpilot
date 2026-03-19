@@ -7,12 +7,3 @@ shopify:
 ebay:
   name: "eBay"
   credentials:
-    - client_id
-    - client_secret
-
-amazon:
-  name: "Amazon"
-  credentials:
-    - seller_id
-    - access_key
-    - secret_key

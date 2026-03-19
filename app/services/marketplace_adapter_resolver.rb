@@ -4,6 +4,8 @@ class MarketplaceAdapterResolver
 
     when "shopify"
       Integrations::Adapters::ShopifyAdapter.new(account)
+    when "ebay"
+      Integrations::Adapters::EbayAdapter.new(account)
 
     else
       raise "Unsupported marketplace"

@@ -6,10 +6,10 @@ class MarketplaceSyncJob < ApplicationJob
 
     case sync_type
     when "orders"
-      OrderImportService.new(account).import
+      OrderImportService.new(account).call
 
     when "products"
-      ProductImportService.new(account).import
+      ProductImportService.new(account).call
 
     when "repricing"
       run_repricing(account)

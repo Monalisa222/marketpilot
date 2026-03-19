@@ -27,4 +27,12 @@ class ProductPresenter
   def listings_path
     Rails.application.routes.url_helpers.listings_path(product_id: product.id)
   end
+
+  def to_model
+    product
+  end
+
+  def to_param
+    product.to_param
+  end
 end

@@ -19,10 +19,16 @@
 
       <!-- Account Name -->
       <div class="mb-5">
-        <%= f.label :account_name, class: "block text-sm font-medium text-gray-700 mb-1" %>
+        <label class="block text-sm font-medium text-gray-700 mb-1">
+          Account Name
+          <span class="text-red-500">*</span>
+        </label>
+
         <%= f.text_field :account_name,
-              class: "w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900",
-              placeholder: "e.g. My Shopify Store" %>
+              required: true,
+              placeholder: "Enter Account Name",
+              class: "w-full border rounded-lg px-3 py-2 text-sm 
+                      focus:outline-none focus:ring-2 focus:ring-gray-900 transition" %>
       </div>
 
       <!-- Marketplace -->
@@ -39,10 +45,21 @@
       <!-- Dynamic Fields -->
       <div id="credentials_fields" class="space-y-5"></div>
 
-      <!-- Submit -->
-      <div class="mt-6 flex justify-end">
+      <!-- Submit Buttons -->
+      <div class="mt-6 flex justify-end gap-3">
+
+        <!-- Default Submit -->
         <%= f.submit "Connect Account",
+              id: "default_submit",
               class: "bg-gray-900 text-white px-5 py-2 rounded-lg text-sm hover:bg-gray-800 transition" %>
+
+        <!-- eBay Button -->
+        <button type="button"
+                id="ebay_submit"
+                class="hidden bg-blue-600 text-white px-5 py-2 rounded-lg text-sm hover:bg-blue-500 transition">
+          Connect eBay Account
+        </button>
+
       </div>
 
     <% end %>
@@ -59,6 +76,8 @@
 
     const select = document.getElementById("marketplace_select")
     const container = document.getElementById("credentials_fields")
+    const defaultSubmit = document.getElementById("default_submit")
+    const ebaySubmit = document.getElementById("ebay_submit")
 
     if (!select || !container) return
 
@@ -66,12 +85,27 @@
       return text.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase())
     }
 
+    function toggleButtons(marketplace) {
+      if (marketplace === "ebay") {
+        defaultSubmit.classList.add("hidden")
+        ebaySubmit.classList.remove("hidden")
+      } else {
+        defaultSubmit.classList.remove("hidden")
+        ebaySubmit.classList.add("hidden")
+      }
+    }
+
     function renderFields(marketplace) {
       container.innerHTML = ""
 
       if (!config[marketplace]) return
 
-      config[marketplace]["credentials"].forEach(field => {
+      const credentials = config[marketplace]["credentials"]
+
+      // Fix: handle null / undefined / empty
+      if (!credentials || credentials.length === 0) return
+
+      credentials.forEach(field => {
 
         const isSecret = field.includes("secret") || field.includes("key")
 
@@ -95,14 +129,24 @@
       })
     }
 
+    // eBay redirect logic
+    ebaySubmit.addEventListener("click", function () {
+      const form = this.closest("form")
+      const formData = new FormData(form)
+      const params = new URLSearchParams(formData)
 
-    // Change event
+      window.location.href = `/ebay/connect?${params.toString()}`
+    })
+
+    // On marketplace change
     select.addEventListener("change", function () {
       renderFields(this.value)
+      toggleButtons(this.value)
     })
 
     // Initial load
     renderFields(select.value)
+    toggleButtons(select.value)
 
   })
 </script>

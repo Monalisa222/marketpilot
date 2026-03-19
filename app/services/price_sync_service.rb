@@ -1,32 +1,30 @@
-class PriceSyncService
+class PriceSyncService < BaseService
   def initialize(variant)
     @variant = variant
+
+    # initialize with safe defaults
+    super(account: nil, resource: nil)
   end
 
   def sync
     @variant.listings.each do |listing|
+      @account = listing.marketplace_account
+      @resource = listing
+
+      listing.update!(price: @variant.price)
+
       adapter = MarketplaceAdapterResolver.for(listing.marketplace_account)
 
-      adapter.update_price(
-        @variant.sku,
-        listing.price
-      )
+      result = adapter.update_price(listing, listing.price)
 
-      SyncLoggerService.log(
-        organization: listing.marketplace_account.organization,
-        resource: listing,
-        action: "price_sync",
-        status: "success",
-        message: "Price updated to #{listing.price}"
-      )
-    rescue StandardError => e
-      SyncLoggerService.log(
-        organization: listing.marketplace_account.organization,
-        resource: listing,
-        action: "price_sync",
-        status: "failure",
-        message: e.message
-      )
+      if result[:success]
+        log_success("price_sync", "Updated to #{listing.price}")
+      else
+        log_failure("price_sync", result[:error])
+      end
+
+    rescue => e
+      log_failure("price_sync", e.message)
     end
   end
 end

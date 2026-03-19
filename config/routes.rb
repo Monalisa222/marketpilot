@@ -69,4 +69,7 @@ Rails.application.routes.draw do
       post :products_update
     end
   end
+
+  get "/ebay/connect", to: "ebay#connect"
+  get "/ebay/callback", to: "ebay#callback"
 end

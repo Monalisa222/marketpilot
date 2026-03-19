@@ -1,15 +1,22 @@
-class OrderImportService
+class OrderImportService < BaseService
   def initialize(account)
     @account = account
     @adapter = MarketplaceAdapterResolver.for(account)
+
+    super(account: account)
   end
 
-  def import
+  def call
     orders = @adapter.fetch_orders
+
+    log_success("fetch_orders", "Fetched #{orders.size} orders")
 
     orders.each do |order_data|
       process_order(order_data)
     end
+
+  rescue => e
+    log_failure("fetch_orders", e.message)
   end
 
   private
@@ -30,33 +37,29 @@ class OrderImportService
 
     order.save!
 
-    # ✅ Prevent duplicate items
+    # set resource context
+    @resource = order
+
     existing_variant_ids = order.order_items.pluck(:variant_id)
 
     data[:items].each do |item|
-      # 1. Find listing (marketplace mapping)
       listing = Listing.find_by(
         marketplace_account: @account,
         external_id: item[:external_variant_id]
       )
 
       unless listing
-        SyncLoggerService.log(
-          organization: @account.organization,
-          resource: order,
-          action: "order_import_missing_listing",
-          status: "failed",
-          message: "Listing not found for #{item[:external_variant_id]}"
+        log_failure(
+          "order_import_missing_listing",
+          "Listing not found for #{item[:external_variant_id]}"
         )
         next
       end
 
       variant = listing.variant
 
-      # 2. Idempotency check
       next if existing_variant_ids.include?(variant.id)
 
-      # 3. Create order item
       OrderItem.create!(
         order: order,
         variant: variant,
@@ -64,7 +67,6 @@ class OrderImportService
         price: item[:price]
       )
 
-      # 4. Inventory deduction (only once)
       if new_order
         InventoryTransactionService
           .new(variant, -item[:quantity])
@@ -72,20 +74,11 @@ class OrderImportService
       end
     end
 
-    SyncLoggerService.log(
-      organization: @account.organization,
-      resource: order,
-      action: "order_import",
-      status: "success"
-    )
+    log_success("order_import", "Order #{order.external_id} imported")
 
   rescue => e
-    SyncLoggerService.log(
-      organization: @account.organization,
-      resource: order,
-      action: "order_import",
-      status: "failed",
-      message: e.message
-    )
+    log_failure("order_import", e.message)
+  ensure
+    @resource = nil
   end
 end

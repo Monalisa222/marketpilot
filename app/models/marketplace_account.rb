@@ -8,6 +8,8 @@ class MarketplaceAccount < ApplicationRecord
 
   validate :validate_credentials_presence
 
+  validates :account_name, presence: true
+
   def credential(key)
     credentials[key.to_s]
   end

@@ -1,15 +1,22 @@
-class ProductImportService
+class ProductImportService < BaseService
   def initialize(account)
     @account = account
     @adapter = MarketplaceAdapterResolver.for(account)
+
+    super(account: account)
   end
 
-  def import
+  def call
     products = @adapter.fetch_products
+
+    log_success("fetch_products", "Fetched #{products.size} products")
 
     products.each do |data|
       create_or_update_product(data)
     end
+
+  rescue => e
+    log_failure("fetch_products", e.message)
   end
 
   private
@@ -22,9 +29,12 @@ class ProductImportService
 
     product.save!
 
+    # set resource context
+    @resource = product
+
     data[:variants]&.each do |variant_data|
       variant = product.variants.find_or_initialize_by(
-        sku: variant_data[:sku] ||  "SKU-#{variant_data[:external_id]}"
+        sku: variant_data[:sku] || "SKU-#{variant_data[:external_id]}"
       )
 
       variant.update!(
@@ -43,5 +53,10 @@ class ProductImportService
         quantity: variant_data[:quantity]
       )
     end
+
+    log_success("product_import", "Product #{product.title} synced")
+
+  rescue => e
+    log_failure("product_import", e.message)
   end
 end

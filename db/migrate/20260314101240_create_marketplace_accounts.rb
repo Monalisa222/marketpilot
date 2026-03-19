@@ -10,6 +10,6 @@ class CreateMarketplaceAccounts < ActiveRecord::Migration[8.1]
       t.timestamps
     end
 
-    add_index :marketplace_accounts, [:organization_id, :marketplace], unique: true
+    add_index :marketplace_accounts, [ :organization_id, :marketplace ], unique: true
   end
 end

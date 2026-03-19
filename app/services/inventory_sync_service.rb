@@ -1,33 +1,33 @@
-class InventorySyncService
+class InventorySyncService < BaseService
   def initialize(variant)
     @variant = variant
+
+    # initialize with safe defaults
+    super(account: nil, resource: nil)
   end
 
   def sync
-    @variant.listings.each do |listing|
+    @variant.listings.find_each do |listing|
+      # set correct context per listing
+      @account = listing.marketplace_account
+      @resource = listing
+
       listing.update!(quantity: @variant.quantity)
-      adapter = MarketplaceAdapterResolver.for(listing.marketplace_account)
 
-      adapter.update_inventory(
-        listing.external_id,
-        listing.quantity
-      )
+      adapter = MarketplaceAdapterResolver.for(@account)
 
-      SyncLoggerService.log(
-        organization: listing.marketplace_account.organization,
-        resource: listing,
-        action: "inventory_sync",
-        status: "success",
-        message: "Inventory updated to #{listing.quantity}"
-      )
-    rescue StandardError => e
-      SyncLoggerService.log(
-        organization: listing.marketplace_account.organization,
-        resource: listing,
-        action: "inventory_sync",
-        status: "failure",
-        message: e.message
-      )
+      result = adapter.update_inventory(listing, listing.quantity)
+
+      if result[:success]
+        log_success("inventory_sync", "Updated to #{listing.quantity}")
+      else
+        log_failure("inventory_sync", result[:error])
+      end
+
+    rescue => e
+      log_failure("inventory_sync", e.message)
+    ensure
+      @resource = nil
     end
   end
 end

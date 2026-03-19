@@ -1,7 +1,12 @@
-class RepricingService
+class RepricingService < BaseService
   def initialize(listing)
     @listing = listing
     @rule = listing.repricing_rule
+
+    super(
+      account: listing.marketplace_account,
+      resource: listing
+    )
   end
 
   def run
@@ -17,29 +22,22 @@ class RepricingService
 
     @listing.update!(price: new_price)
 
-    adapter = MarketplaceAdapterResolver.for(
-      @listing.marketplace_account
-    )
+    adapter = MarketplaceAdapterResolver.for(@account)
 
     adapter.update_price(
-      @listing.external_id,
+      @listing,
       new_price
     )
 
-    SyncLoggerService.log(
-      organization: @listing.marketplace_account.organization,
-      resource: @listing,
-      action: "repricing",
-      status: "success"
+    log_success(
+      "repricing",
+      "Price updated to #{new_price}"
     )
 
   rescue => e
-    SyncLoggerService.log(
-      organization: @listing.marketplace_account.organization,
-      resource: @listing,
-      action: "repricing",
-      status: "failed",
-      message: e.message
+    log_failure(
+      "repricing",
+      e.message
     )
   end
 
