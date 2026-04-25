@@ -26,7 +26,6 @@ gem "jbuilder"
 gem "tzinfo-data", platforms: %i[ windows jruby ]
 
 # Use the database-backed adapters for Rails.cache, Active Job, and Action Cable
-gem "solid_cache"
 gem "solid_queue"
 gem "solid_cable"
 
@@ -44,6 +43,7 @@ gem "bcrypt"
 gem "sidekiq", "~> 8.1"
 
 gem "redis", "~> 5.4"
+
 
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem

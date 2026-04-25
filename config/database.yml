@@ -87,18 +87,8 @@ test:
 production:
   primary: &primary_production
     <<: *default
-    database: marketpilot_production
-    username: marketpilot
+    url: <%= ENV["DATABASE_URL"] %>
+    database: ENV["MARKETPILOT_DATABASE_NAME"] || "marketpilot_production"
+    username: ENV["MARKETPILOT_DATABASE_USERNAME"] || "marketpilot_production_user"
     password: <%= ENV["MARKETPILOT_DATABASE_PASSWORD"] %>
-  cache:
-    <<: *primary_production
-    database: marketpilot_production_cache
-    migrations_paths: db/cache_migrate
-  queue:
-    <<: *primary_production
-    database: marketpilot_production_queue
-    migrations_paths: db/queue_migrate
-  cable:
-    <<: *primary_production
-    database: marketpilot_production_cable
-    migrations_paths: db/cable_migrate
+
